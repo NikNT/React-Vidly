@@ -1,20 +1,25 @@
 import React, { Component } from "react";
-import { getMovies } from "../services/fakeMovieService";
 import Like from "../common/Like";
+import Paginate from "../common/Paginate";
+import { getMovies } from "../services/fakeMovieService";
+import { paginate } from "../utils/paginate";
 
 class Table extends Component {
   state = {
     movies: getMovies(),
+    pageSize: 4,
+    currentPage: 1,
   };
 
-  handleDelete(movie) {
+  handleDelete = (movie) => {
     const movies = this.state.movies.filter((m) => m._id !== movie._id); //Gives a new array : Containing Movies with ID Not Matching the ID of Selected Movie
     this.setState({
       movies,
+      pageSize: 4,
     });
-  }
+  };
 
-  handleLike(movie) {
+  handleLike = (movie) => {
     const movies = [...this.state.movies];
     const index = movies.indexOf(movie);
     movies[index] = { ...movies[index] };
@@ -22,20 +27,26 @@ class Table extends Component {
     this.setState({
       movies,
     });
-  }
+  };
+
+  handleChange = (page) => {
+    this.setState({
+      currentPage: page,
+    });
+  };
 
   render() {
-    const { movies } = this.state;
-
-    if (movies.length === 0) {
+    const { length: count } = this.state.movies;
+    const { movies: allMovies, pageSize, currentPage } = this.state;
+    const movies = paginate(allMovies, currentPage, pageSize);
+    if (count === 0) {
       return <h1 style={{ marginTop: "10px" }}>No Movies in Database 😕</h1>;
     }
-
     return (
       <React.Fragment>
-        <p style={{ marginTop: "10px" }}>
-          Showing {movies.length} Movies in Database 🎥
-        </p>
+        <h2 style={{ marginTop: "10px" }} className="container text-center">
+          Showing {count} Movies in Database 🎥
+        </h2>
         <table className="table">
           <thead>
             <tr>
@@ -72,6 +83,13 @@ class Table extends Component {
             ))}
           </tbody>
         </table>
+        <Paginate
+          pageSize={pageSize}
+          itemsCount={count}
+          currentPage={currentPage}
+          onPageChange={this.handleChange}
+        />
+        <h1 className="container text-center">Vidly</h1>
       </React.Fragment>
     );
   }
